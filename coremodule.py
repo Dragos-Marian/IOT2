@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 import random
 #import json
@@ -8,10 +9,12 @@ import random
 
 FEVER_START='FEVER_FEVER_START'
 FEVER_END='FEVER_END_EVENT'
-FEVER_THRESHOLD=37.2
-NO_OF_TEMP=10
-SLEEP_DURATION=30
+FEVER_THRESHOLD=41
+NO_OF_TEMP=9
+SLEEP_DURATION=2
 SIMULATION_MODE=True
+FeverStarted=0
+NrOfTemp=0
 
 
 #FIREBASE_URL="https://iotproject-45a41.firebaseio.com/"
@@ -70,35 +73,34 @@ def writeInPlotly(temperature,AcceptValues):
         )]
         fig=go.Figure(data=data, layout=layout)
         py.offline.plot(fig, filename='graph.html')
+"""
+def TestFever(temperature):
+        global NrOfTemp
+        global FeverStarted	
+        if NrOfTemp==NO_OF_TEMP:
+	        NrOfTemp=NrOfTemp+1
+	        print(NrOfTemp)
+	        NrOfTemp=0
+	        print(NrOfTemp)
+	        print(temperature)
+	        print("END")
+	        #writeInFirebase(FEVER_END)
+        elif temperature > FEVER_THRESHOLD:
+	        NrOfTemp=0
+	        FeverStarted=1
+	        NrOfTemp=NrOfTemp+1
+	        print( NrOfTemp)
+	        print(temperature)
+	        #writeInFirebase(FIVER_START)
+        elif FeverStarted==1:
+	        NrOfTemp=NrOfTemp+1
+	        print(NrOfTemp)
+	        print(temperature)
+        else:
+	        NrOfTemp=NrOfTemp
+		
 
-def handleFever(temperature):
-    # print(temperature)
-    if temperature > FEVER_THRESHOLD and handleFever.previousFever < NO_OF_TEMP:
-        writeInFirebase(FEVER_START)
-        # print(FEVER_START)
-        AcceptValues=1
-        writeInPlotly(temperature,AcceptValues) 
-        handleFever.started=1        
-        handleFever.previousFever = 1
-        return
-
-    if  handleFever.previousFever == NO_OF_TEMP and handleFever.started==1:
-        writeInFirebase(FEVER_END) 
-        # print(FEVER_END)
-        AcceptValues=0
-        writeInPlotly(temperature,AcceptValues)
-        handleFever.previousFever = 0
-        handleFever.started=0
-        return
-
-    if  handleFever.previousFever < NO_OF_TEMP and temperature <= FEVER_THRESHOLD and handleFever.started==1:
-        AcceptValues=1
-        writeInPlotly(temperature,AcceptValues)
-        handleFever.previousFever += 1
-    else:
-        handleFever.previousFever=0     
-
-
+"""
 def write_to_db(temperature):
     timestamp = int(time.time() * 1000)
     event = 'NONE'
@@ -121,19 +123,17 @@ def startMonitoringTemperature():
         write_to_db(temperature)
         handleFever(temperature)
         time.sleep(SLEEP_DURATION)
+
 """
 def main():
     #conn = db.create_connection(db.DB_FILE)
    # with conn:
       #  db.create_db(conn)
     # startMonitoringTemperature()
-    handleFever.previousFever = 0
-    handleFever.started=0
     while True:
-	temperature = random.uniform(37,42)
-	print(temperature)
-	#handleFever(temperature)
-	#time.sleep(SLEEP_DURATION)
+        temperature=round(random.uniform(36,42),2)
+        TestFever(temperature)
+        time.sleep(SLEEP_DURATION)
 
 if __name__ == "__main__":
     main()
